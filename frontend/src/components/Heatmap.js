@@ -241,11 +241,10 @@ const Heatmap = () => {
 
   return (
     <Container>
-      <div className="space-y-4 my-3">
-        {loading && <div className="text-center text-gray-500">Loading...</div>}
-        <div className="flex flex-wrap justify-between gap-6 mb-4">
-          <div className="w-full sm:w-1/4">
-            <label htmlFor="dataType" className="block text-gray-700">
+      <div className="space-y-4 my-5" style={{ display: "flex", flexDirection: "row" }}>
+        <div style={{width:'30vw'}}>
+          <div style={{padding:'10px'}}>
+            <label htmlFor="dataType" style={{ paddingRight: "5px" }}>
               Select Data Type:
             </label>
             <select
@@ -260,62 +259,8 @@ const Heatmap = () => {
             </select>
           </div>
   
-          {dataType === "half_year" && (
-            <div className="w-full sm:w-1/4">
-              <p>Current Half-Year: {currentHalfYear}</p>
-              <div className="flex justify-between mt-2">
-                <button
-                  onClick={goBackHalfYear}
-                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
-                  &lt; Previous
-                </button>
-                <button
-                  onClick={goForwardHalfYear}
-                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
-                  Next &gt;
-                </button>
-              </div>
-            </div>
-          )}
-  
-          {dataType === "yearly" && (
-            <div className="w-full sm:w-1/4">
-              <p>Current Year: {currentYear}</p>
-              <div className="flex justify-between mt-2">
-                <button
-                  onClick={goBackYear}
-                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
-                  &lt; Previous
-                </button>
-                <button
-                  onClick={goForwardYear}
-                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
-                  Next &gt;
-                </button>
-              </div>
-            </div>
-          )}
-  
-          {dataType === "monthly" && (
-            <div className="w-full sm:w-1/4">
-              <p>Current Month: {currentMonth}</p>
-              <div className="flex justify-between mt-2">
-                <button
-                  onClick={goBackMonth}
-                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
-                  &lt; Previous
-                </button>
-                <button
-                  onClick={goForwardMonth}
-                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
-                  Next &gt;
-                </button>
-              </div>
-            </div>
-          )}
-  
-          <div className="w-full sm:w-1/4">
-            <label className="block text-gray-700">Age Group:</label>
+          <div  style={{padding:'10px'}}>
+            <label className="block text-gray-700" style={{ paddingRight: "5px" }}>Age Group:</label>
             <select
               value={age}
               onChange={(e) => setAge(e.target.value)}
@@ -330,8 +275,8 @@ const Heatmap = () => {
             </select>
           </div>
   
-          <div className="w-full sm:w-1/4">
-            <label className="block text-gray-700">Race:</label>
+          <div  style={{padding:'10px'}}>
+            <label className="block text-gray-700" style={{ paddingRight: "5px" }}>Race: </label>
             <select
               value={race}
               onChange={(e) => setRace(e.target.value)}
@@ -350,8 +295,8 @@ const Heatmap = () => {
             </select>
           </div>
   
-          <div className="w-full sm:w-1/4">
-            <label className="block text-gray-700">Gender:</label>
+          <div style={{padding:'10px'}}>
+            <label className="block text-gray-700" style={{ paddingRight: "5px" }}>Gender:</label>
             <select
               value={gender}
               onChange={(e) => setGender(e.target.value)}
@@ -362,13 +307,67 @@ const Heatmap = () => {
               <option value="Other">Other</option>
             </select>
           </div>
-        </div>
+          {dataType === "half_year" && (
+            <div  style={{padding:'10px'}}>
+              <p>Current Half-Year: {currentHalfYear.replace("_", "-")}</p>
+              <div className="flex justify-between mt-2">
+                <button
+                  onClick={goBackHalfYear}
+                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
+                  &lt; Previous
+                </button>
+                <button
+                  onClick={goForwardHalfYear}
+                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
+                  Next &gt;
+                </button>
+              </div>
+            </div>
+          )}
   
+          {dataType === "yearly" && (
+            <div  style={{padding:'10px'}}>
+              <p>Current Year: {currentYear.replace("_", "-")}</p>
+              <div className="flex justify-between mt-2">
+                <button
+                  onClick={goBackYear}
+                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
+                  &lt; Previous
+                </button>
+                <button
+                  onClick={goForwardYear}
+                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
+                  Next &gt;
+                </button>
+              </div>
+            </div>
+          )}
+  
+          {dataType === "monthly" && (
+            <div  style={{padding:'10px'}}>
+              <p>Current Month: {currentMonth.replace("_", "-")}</p> {/* Replace _ with - */}
+              <div className="flex justify-between mt-2">
+                <button
+                  onClick={goBackMonth}
+                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
+                  &lt; Previous
+                </button>
+                <button
+                  onClick={goForwardMonth}
+                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
+                  Next &gt;
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <div style={{width:'70vw'}}>
         <MapContainer
           center={[37.7749, -122.4194]}
           zoom={13}
           style={{
-            height: "50vh",
+            height: "70vh",
             width: "100%",
           }}
         >
@@ -378,6 +377,7 @@ const Heatmap = () => {
           />
           <HeatmapLayer points={filteredData} dataType={dataType} />
         </MapContainer>
+        </div>
       </div>
     </Container>
   );

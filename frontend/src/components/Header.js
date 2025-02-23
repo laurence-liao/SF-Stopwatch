@@ -5,27 +5,27 @@ function Header() {
   return (
     <div
       style={{
-        backgroundColor: "#24272B",
+        backgroundColor: "#00517C", // Light gray background
         backgroundSize: "cover",
         backgroundPosition: "center",
-        minHeight: "20vh", // Increase the height to give it more space
+        minHeight: "20vh", // Optimal height for a header
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: "white", // Keep the color for text
-        textShadow: "4px 4px 8px rgba(0,0,0,0.7)", // Enhance text shadow for better readability
-        padding: "0 15px", // Add padding to avoid text touching the edges
-        fontFamily: "'Arial', sans-serif", // Add a clean sans-serif font
+        color: "#2D3748", // Dark gray text for contrast
+        padding: "20px 15px", // Adequate padding
+        fontFamily: "'Inter', sans-serif", // Modern sans-serif font
       }}>
       <Container>
         <h1
           className="text-center"
           style={{
-            fontSize: "4rem", // Large font size
-            fontWeight: "bold", // Make it bold
-            letterSpacing: "2px", // Add spacing between letters for emphasis
-            textTransform: "uppercase", // Uppercase text for emphasis
-            margin: "0", // Remove default margin for tighter design
+            fontSize: "3.5rem", // Large but not overwhelming
+            fontWeight: "600", // Semi-bold for emphasis
+            letterSpacing: "1.5px", // Slight letter spacing
+            textTransform: "uppercase", // Uppercase for a modern look
+            margin: "0", // Remove default margin
+            color: "#FFFFFF", // Slightly lighter gray for the text
           }}>
           SF StopWatch
         </h1>
@@ -34,4 +34,4 @@ function Header() {
   );
 }
 
-export default Header;
+export default Header;  
