@@ -3,12 +3,19 @@ import json
 import os
 
 # Load data
-columns_needed = ["stop_datetime", "latitude", "longitude", "reason_for_stop"]
-df = pd.read_csv("backend/data.csv", usecols=columns_needed, low_memory=False)
-df = df[df["reason_for_stop"] == "Traffic violation"]
+columns_needed = ["stop_datetime", "latitude", "longitude"]
+# df = pd.read_csv("backend/data.csv", usecols=columns_needed, low_memory=False)
+df = pd.read_csv(
+    "backend/sf_traffic_data_cleaned.csv", usecols=columns_needed, low_memory=False
+)
+# df = df[df["reason_for_stop"] == "Traffic violation"]
 
 # Convert stop_datetime to datetime and extract date and hour
-df["stop_datetime"] = pd.to_datetime(df["stop_datetime"], format="%Y/%m/%d %I:%M:%S %p")
+# df["stop_datetime"] = pd.to_datetime(df["stop_datetime"], format="%Y/%m/%d %I:%M:%S %p")
+
+df["stop_datetime"] = pd.to_datetime(df["stop_datetime"], format="%Y-%m-%d %H:%M:%S")
+
+
 df["date"] = df["stop_datetime"].dt.date
 df["hour"] = df["stop_datetime"].dt.hour
 df["year"] = df["stop_datetime"].dt.year
@@ -20,7 +27,7 @@ df["longitude"] = pd.to_numeric(df["longitude"], errors="coerce")
 df["latitude"] = pd.to_numeric(df["latitude"], errors="coerce")
 df = df.dropna(subset=["longitude", "latitude"])
 
-# Group by date and hour, and prepare the heatmap data
+# Group by date and hour and gender, and prepare the heatmap data
 time_groups = df.groupby(["date", "hour"])
 
 output_dir = "backend/heatmap_data/"
@@ -53,6 +60,7 @@ for year in years:
         for _, row in df[df["year"] == year].iterrows()
     ]
 all_data["yearly"] = year_data
+
 
 # 3. Data Separated by Half-Year (e.g., 2018 H1: Jan-Jun, 2018 H2: Jul-Dec)
 half_year_ranges = [
