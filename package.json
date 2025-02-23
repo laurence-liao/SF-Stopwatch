@@ -1,7 +1,14 @@
 {
   "dependencies": {
+    "bootstrap": "^5.3.3",
+    "flask": "^0.2.10",
     "leaflet": "^1.9.4",
     "leaflet.heat": "^0.2.0",
-    "react-leaflet": "^5.0.0"
+    "react": "^19.0.0",
+    "react-bootstrap": "^2.10.9",
+    "react-leaflet": "^5.0.0",
+    "react-router-dom": "^7.2.0",
+    "react-scripts": "^5.0.1",
+    "web-vitals": "^4.2.4"
   }
 }

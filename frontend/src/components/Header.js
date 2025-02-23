@@ -27,7 +27,7 @@ function Header() {
             textTransform: "uppercase", // Uppercase text for emphasis
             margin: "0", // Remove default margin for tighter design
           }}>
-          Bias bacono
+          SF StopWatch
         </h1>
       </Container>
     </div>

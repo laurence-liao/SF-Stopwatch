@@ -13,8 +13,8 @@ function Footer() {
         justifyContent: "center",
         color: "white",
         textAlign: "center",
-        padding: "20px",
-        textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
+        padding: "40px 0px", // Added top/bottom padding for better spacing
+        textShadow: "2px 2px 4px rgba(0,0,0,0.7)", // Text shadow for better contrast
       }}>
       <Container>
         <p
@@ -22,8 +22,9 @@ function Footer() {
             fontSize: "1.2rem",
             lineHeight: "1.6",
             fontWeight: "normal",
-            maxWidth: "800px", // Limit text width for readability
-            margin: "0 auto",
+            maxWidth: "900px", // Increased width for better readability
+            margin: "0 auto", // Center the text
+            padding: "0 15px", // Added padding to prevent text from touching the edges
           }}>
           Visualizing the distribution of traffic stops across San Francisco to
           provide valuable insights for urban mobility and public safety. This
