@@ -13,16 +13,3 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
-
-.home-section {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh; /* Full height */
-}
-
-.home-content {
-  flex-grow: 1; /* This will take all available space */
-  display: flex;
-  justify-content: center; /* Center content horizontally */
-  align-items: center; /* Center content vertically */
-}

@@ -1,6 +1,6 @@
 import React from "react";
 import { Container } from "react-bootstrap";
-import Spongebob from "../Assets/spongebob.jpg";
+import Spongebob from "../Assets/spongebob.jpg"; // Make sure this path is correct
 
 function Header() {
   return (
@@ -9,7 +9,7 @@ function Header() {
         backgroundImage: `url(${Spongebob})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
-        height: "20vh",
+        minHeight: "20vh", // Minimum height (will grow if content is more)
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
