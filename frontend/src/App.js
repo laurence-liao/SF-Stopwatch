@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import Home from "./components/Home";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Preloader from "./components/Pre";
 
 import {
   BrowserRouter as Router,
@@ -18,13 +19,14 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       updateLoad(false);
-    }, 1200);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
 
   return (
     <Router>
+      <Preloader load={load} />
       <div
         className="App"
         id={load ? "no-scroll" : "scroll"}>
