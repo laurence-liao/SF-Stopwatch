@@ -1,34 +1,27 @@
-import pandas as pd
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 import numpy as np
-from sklearn.svm import OneClassSVM
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score
-import matplotlib.pyplot as plt
+import json
+import pandas as pd
 
-df = pd.read_csv("backend/data.csv")
-
-
-# Prepare the data (use features as necessary)
-X = df[
-    [
-        "longitude",
-        "latitude",
-        "perceived_race_ethnicity",
-        "perceived_gender",
-        "duration_of_stop",
-    ]
+columns_needed = [
+    "stop_datetime",
+    "latitude",
+    "longitude",
+    "perceived_race_ethnicity",
+    "perceived_gender",
+    "perceived_age_group",
 ]
+df = pd.read_csv(
+    "backend/sf_traffic_data_cleaned.csv", usecols=columns_needed, low_memory=False
+)
 
-# Normalize the features
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+# Get unique groups for each column
+ethnicity_groups = df["perceived_race_ethnicity"].unique().tolist()
+gender_groups = df["perceived_gender"].unique().tolist()
+age_groups = df["perceived_age_group"].unique().tolist()
 
-# One-Class SVM for anomaly detection (learning only from the positive class)
-model = OneClassSVM(nu=0.1, kernel="rbf", gamma="scale")
-model.fit(X_scaled)
-
-# Predict anomalies (1 for normal, -1 for anomaly)
-y_pred = model.predict(X_scaled)
-
-# Results (1 indicates traffic stop-like behavior, -1 indicates outlier or no traffic stop)
-print("Predictions (1: Likely Stop, -1: Unlikely Stop):", y_pred)
+# Print the results
+print("Ethnicity Groups:", ethnicity_groups)
+print("Gender Groups:", gender_groups)
+print("Age Groups:", age_groups)

@@ -1,23 +1,34 @@
 import React from "react";
 import { Container } from "react-bootstrap";
-import Spongebob from "../Assets/spongebob.jpg"; // Make sure this path is correct
 
 function Header() {
   return (
     <div
       style={{
-        backgroundImage: `url(${Spongebob})`,
+        backgroundColor: "#24272B",
         backgroundSize: "cover",
         backgroundPosition: "center",
-        minHeight: "20vh", // Minimum height (will grow if content is more)
+        minHeight: "20vh", // Increase the height to give it more space
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: "white",
-        textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
+        color: "white", // Keep the color for text
+        textShadow: "4px 4px 8px rgba(0,0,0,0.7)", // Enhance text shadow for better readability
+        padding: "0 15px", // Add padding to avoid text touching the edges
+        fontFamily: "'Arial', sans-serif", // Add a clean sans-serif font
       }}>
       <Container>
-        <h1 className="text-center">Traffic Data Analysis</h1>
+        <h1
+          className="text-center"
+          style={{
+            fontSize: "4rem", // Large font size
+            fontWeight: "bold", // Make it bold
+            letterSpacing: "2px", // Add spacing between letters for emphasis
+            textTransform: "uppercase", // Uppercase text for emphasis
+            margin: "0", // Remove default margin for tighter design
+          }}>
+          Bias bacono
+        </h1>
       </Container>
     </div>
   );
