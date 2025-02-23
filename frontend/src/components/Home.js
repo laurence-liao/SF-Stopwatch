@@ -26,9 +26,6 @@ function Home() {
               <div
                 className="home-content"
                 style={{ flex: 1 }}>
-                <h2 className="fw-bold">
-                  Welcome to: <span className="text-primary">Bias Bacon</span>
-                </h2>
                 <Heatmap />
               </div>
             </Col>

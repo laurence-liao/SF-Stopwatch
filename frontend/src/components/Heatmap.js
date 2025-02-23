@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet.heat";
+import { Container, Row, Col } from "react-bootstrap";
 
 const HeatmapLayer = ({ points, dataType }) => {
   const map = useMap();
@@ -40,6 +41,12 @@ const HeatmapLayer = ({ points, dataType }) => {
         maxZoom: heatmapOptions.maxZoom,
       }
     ).addTo(map);
+
+    const canvas = heatLayer._canvas; // This accesses the canvas element used by the heatmap
+    if (canvas) {
+      canvas.willReadFrequently = true; // Set the willReadFrequently attribute
+    }
+
     return () => {
       map.removeLayer(heatLayer);
     };
@@ -55,21 +62,60 @@ const Heatmap = () => {
   const [currentHalfYear, setCurrentHalfYear] = useState("2023_H2");
   const [currentYear, setCurrentYear] = useState("2023");
   const [currentMonth, setCurrentMonth] = useState("12_2023");
+  const [age, setAge] = useState("");
+  const [race, setRace] = useState("");
+  const [gender, setGender] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true); // Start loading
     fetch("http://localhost:5000/api/heatmap-data")
       .then((response) => response.json())
       .then((data) => {
         setHeatmapData(data); // Store the entire fetched data
         setFilteredData(data[dataType] || []); // Set the initial data for the default dataType
+        setLoading(false); // End loading
       })
       .catch((error) => {
         console.error("Error fetching heatmap data:", error);
+        setLoading(false); // End loading
       });
   }, []);
 
   // Whenever the dataType changes, filter the data accordingly
   useEffect(() => {
+    const fetchFilteredData = async () => {
+      setLoading(true); // Start loading
+      try {
+        const queryParams = new URLSearchParams();
+        if (age) queryParams.append("age", age);
+        if (race) queryParams.append("race", race);
+        if (gender) queryParams.append("gender", gender);
+
+        const response = await fetch(
+          `http://localhost:5000/api/filter-heatmap?${queryParams.toString()}`
+        );
+        const data = await response.json();
+        if (dataType === "overall") {
+          setFilteredData(data[dataType] || []); // Filter based on selected dataType
+        } else if (dataType === "yearly") {
+          setFilteredData(data[dataType][currentYear] || []);
+        } else if (dataType === "half_year") {
+          setFilteredData(data[dataType][currentHalfYear] || []);
+        } else if (dataType === "monthly") {
+          setFilteredData(data[dataType][currentMonth] || []);
+        }
+        setLoading(false); // End loading
+      } catch (error) {
+        console.error("Error fetching filtered heatmap data:", error);
+        setLoading(false); // End loading
+      }
+    };
+
+    // Only fetch if a filter is selected
+    if (age || race || gender) {
+      fetchFilteredData();
+    }
     if (heatmapData) {
       if (dataType === "overall") {
         setFilteredData(heatmapData[dataType] || []); // Filter based on selected dataType
@@ -81,7 +127,16 @@ const Heatmap = () => {
         setFilteredData(heatmapData[dataType][currentMonth] || []);
       }
     }
-  }, [dataType, currentYear, currentHalfYear, currentMonth, heatmapData]);
+  }, [
+    dataType,
+    currentYear,
+    currentHalfYear,
+    currentMonth,
+    heatmapData,
+    age,
+    race,
+    gender,
+  ]);
 
   // Function to go back a year
   const goBackYear = () => {
@@ -198,24 +253,31 @@ const Heatmap = () => {
   };
 
   return (
-    <div>
-      <div>
-        <label htmlFor="dataType">Select Data Type:</label>
-        <select
-          id="dataType"
-          value={dataType}
-          onChange={(e) => setDataType(e.target.value)}>
-          <option value="overall">Overall</option>
-          <option value="yearly">Yearly</option>
-          <option value="half_year">Half Year</option>
-          <option value="monthly">Monthly</option>
-        </select>
-      </div>
-      <div>
+    <Container>
+      {/* Using Flexbox to display the dropdowns in a row */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between", // Spacing between dropdowns
+          flexWrap: "wrap", // Ensures wrapping on smaller screens
+        }}>
+        {loading && <div>Loading</div>}
+        <div>
+          <label htmlFor="dataType">Select Data Type:</label>
+          <select
+            id="dataType"
+            value={dataType}
+            onChange={(e) => setDataType(e.target.value)}
+            className="form-control">
+            <option value="overall">Overall</option>
+            <option value="yearly">Yearly</option>
+            <option value="half_year">Half Year</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
         {dataType === "half_year" && (
           <>
-            <p>Current Half-Year: {currentHalfYear}</p>{" "}
-            {/* Display current half-year */}
+            <p>Current Half-Year: {currentHalfYear}</p>
             <button onClick={goBackHalfYear}>&lt; Previous</button>
             <button onClick={goForwardHalfYear}>Next &gt;</button>
           </>
@@ -223,7 +285,7 @@ const Heatmap = () => {
 
         {dataType === "yearly" && (
           <>
-            <p>Current Year: {currentYear}</p> {/* Display current year */}
+            <p>Current Year: {currentYear}</p>
             <button onClick={goBackYear}>&lt; Previous</button>
             <button onClick={goForwardYear}>Next &gt;</button>
           </>
@@ -231,30 +293,81 @@ const Heatmap = () => {
 
         {dataType === "monthly" && (
           <>
-            <p>Current Month: {currentMonth}</p> {/* Display current month */}
+            <p>Current Month: {currentMonth}</p>
             <button onClick={goBackMonth}>&lt; Previous</button>
             <button onClick={goForwardMonth}>Next &gt;</button>
           </>
         )}
-      </div>
 
-      <MapContainer
-        center={[37.7749, -122.4194]} // You can set this to your desired center
-        zoom={13}
-        style={{
-          height: "50vh", // Ensures it fills available space
-          width: "100%",
-        }}>
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        <HeatmapLayer
-          points={filteredData}
-          dataType={dataType}
-        />
-      </MapContainer>
-    </div>
+        {/* Dropdown for Age Group */}
+        <div>
+          <label>Age Group:</label>
+          <select
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            className="form-control">
+            <option value="">All</option>
+            <option value="Under 18">Under 18</option>
+            <option value="18 - 29">18-29</option>
+            <option value="30 - 39">30-39</option>
+            <option value="40 - 49">40-49</option>
+            <option value="50 - 60">50-59</option>
+            <option value="60 or over">60+</option>
+          </select>
+        </div>
+
+        {/* Dropdown for Race */}
+        <div>
+          <label>Race:</label>
+          <select
+            value={race}
+            onChange={(e) => setRace(e.target.value)}
+            className="form-control">
+            <option value="">All</option>
+            <option value="White">White</option>
+            <option value="Black/African American">Black</option>
+            <option value="Asian">Asian</option>
+            <option value="Hispanic/Latino(a)">Hispanic</option>
+            <option value="Middle Eastern or South Asian">
+              Middle Eastern or South Asian
+            </option>
+            <option value="Pacific Islander">Pacific Islander</option>
+            <option value="Native American">Native American</option>
+            <option value="Multi-racial">Other</option>
+          </select>
+        </div>
+
+        {/* Dropdown for Gender */}
+        <div>
+          <label>Gender:</label>
+          <select
+            value={gender}
+            onChange={(e) => setGender(e.target.value)}
+            className="form-control">
+            <option value="">All</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <MapContainer
+          center={[37.7749, -122.4194]} // You can set this to your desired center
+          zoom={13}
+          style={{
+            height: "50vh", // Ensures it fills available space
+            width: "100%",
+          }}>
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          <HeatmapLayer
+            points={filteredData}
+            dataType={dataType}
+          />
+        </MapContainer>
+      </div>
+    </Container>
   );
 };
 
