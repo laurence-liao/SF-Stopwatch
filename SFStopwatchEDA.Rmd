@@ -1,0 +1,222 @@
+---
+title: "Traffic Stop EDA"
+date: "2025-02-23"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
+```{r}
+
+traffic_data <- read_csv("Police_Department_Stop_Data_20250222.csv")
+```
+
+# Data Filtering
+
+```{r}
+
+traffic_data <- traffic_data |> 
+  mutate(stop_datetime = ymd_hms(stop_datetime),
+    date = as.Date(stop_datetime),       
+    time = format(stop_datetime, "%H:%M:%S"),
+    year = year(date),
+    month = month(date),
+    month_year = ymd(paste(year, month, "01", sep = "-")),
+    district = str_to_title(district),
+    result = case_when(
+      results_of_stop_code %in% c(1, 7, 9) ~ "Non-Arrest Actions",
+      results_of_stop_code %in% c(2, 3, 4) ~ "Non-Custodial Actions",
+      results_of_stop_code %in% c(5, 6) ~ "Arrest-Related Actions",
+      results_of_stop_code %in% c(8, 10) ~ "Health-Related Actions",
+      results_of_stop_code %in% c(11, 12, 13) ~ "Referral Actions",
+      is.na(results_of_stop_code) ~ "Missing Data",
+      TRUE ~ "Other"
+    )) |>
+  filter(city == "SAN FRANCISCO",
+         reason_for_stop == "Traffic violation",
+         stop_data_record_status == "Completed - Successful Submission",
+         traffic_violation_type == "Moving violation",
+         perceived_gender %in% c("Male", "Female"),
+         !(district %in% c("#N/A", "Out Of Sf / Unk")) & !is.na(district),
+         traffic_viol_off_type == "VC",
+         !is.na(perceived_age_group))
+
+nrow(traffic_data)
+```
+
+# Plotting Traffic Violations by Time
+```{r}
+
+traffic_time <- traffic_data %>% mutate(datetime = ymd_hms(stop_datetime), date = as.Date(datetime), 
+                  time = hour(datetime), label = format(datetime, '%I %p')) %>%
+  select(date, time, label, reason_for_stop)
+
+hour_label <- format(seq(ymd_hms("2024-02-23 00:00:00"), by = "hour", length.out = 24), "%I %p")
+
+#Time Distribution for all dates
+ggplot(traffic_time, aes(x=factor(time, levels = 0:23, 
+                       labels = hour_label))) + 
+  geom_bar(fill='blue') + labs(title = 'Time Distribution', 
+                    x='time', y='count') + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  scale_x_discrete(drop = FALSE)
+
+```
+
+# Plotting Traffic Violations by Gender
+
+```{r}
+
+traffic_data_gender <- traffic_data|> group_by(year, perceived_gender) |>
+  summarize(count = n(), .groups = "drop") |>
+  group_by(year) |>
+  mutate(proportion = count / sum(count))
+
+traffic_data_gender |>
+  ggplot(aes(x = perceived_gender, y = proportion, fill = perceived_gender)) +
+  geom_col() +
+  scale_fill_manual(name = "Gender", values = c("Male" = "lightblue", "Female" = "pink")) +
+  labs(x = "Gender", y = "Proportion", title = "Proportion of Traffic Violations by Gender in 2018-2023") + 
+  facet_wrap(~ year) + 
+  theme_minimal()
+```
+
+# Number Traffic Stops per District from 2018-2023
+
+```{r}
+traffic_data |>
+  group_by(district) |>
+  summarize(count = n()) |>
+  ggplot(aes(x = district, y = count, fill = district)) + 
+  geom_col() +
+  labs(x = "District", y = "Count", title = "Number of Traffic Stops by Districts") + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) 
+```
+
+
+# Plotting Proportion of Traffic Spots per District from 2018-2023
+```{r}
+traffic_data_district <- traffic_data |>
+  group_by(year, district) |>
+  summarize(count = n(), .groups = "drop") |>
+  group_by(year) |>
+  mutate(proportion = count / sum(count)) 
+
+traffic_data_district |>
+  ggplot(aes(x = district, y = proportion, fill = district)) +
+  geom_col() +
+  labs(x = "District", y = "Proportion", title = "Proportion of Traffic Stops by District in 2018-2023") + 
+  facet_wrap(~ year) + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) 
+
+
+  
+  
+```
+
+# Time of Day Plots 2018-2023
+
+```{r}
+traffic_data_time <- traffic_data |>
+  mutate(hour = hour(stop_datetime),
+         hour_label = case_when(
+    hour == 0  ~ "12 AM",
+    hour == 12 ~ "12 PM",
+    hour < 12  ~ paste0(hour, " AM"),
+    hour > 12  ~ paste0(hour - 12, " PM")),
+    hour_label = factor(hour_label, levels = c(
+           "12 AM", "1 AM", "2 AM", "3 AM", "4 AM", "5 AM", "6 AM", "7 AM",
+           "8 AM", "9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM",
+           "4 PM", "5 PM", "6 PM", "7 PM", "8 PM", "9 PM", "10 PM", "11 PM"
+         ))) |>
+  group_by(year, hour_label) |>
+  summarize(count = n(), .groups = "drop") |>
+  group_by(year) |>
+  mutate(proportion = count / sum(count)) 
+
+traffic_data_time |>
+  ggplot(aes(x = hour_label, y = proportion)) +
+  geom_col(fill = "steelblue") +
+  labs(x = "Hour", y = "Proportion", title = "Proportion of Traffic Violations by Hour in 2018-2023") + 
+  facet_wrap(~year) + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 7, angle = 90, vjust = 0.5, hjust = 1)) 
+  
+
+
+  
+```
+
+# Traffic Violations by Race
+
+```{r}
+traffic_data_race <- traffic_data |>
+  group_by(year, perceived_race_ethnicity) |>
+  summarize(count = n(), .groups = "drop") |>
+  group_by(year) |>
+  mutate(proportion = count / sum(count)) 
+
+traffic_data_race |>
+  ggplot(aes(x = perceived_race_ethnicity, y = proportion, fill = perceived_race_ethnicity)) +
+  geom_col() +
+  labs(x = "Race/Ethnicity", y = "Proportion", title = "Proportion of Traffic Violations by Race/Ethnicity in 2018-2023") + 
+  guides(fill = guide_legend(title = "Race/Ethnicity")) +
+  facet_wrap(~ year) + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) 
+  
+```
+
+# Traffic Violations by Age
+
+```{r}
+traffic_data_age <- traffic_data |>
+  mutate(perceived_age_group = factor(perceived_age_group, levels = c("Under 18",
+                                      "18 - 29",
+                                      "30 - 39", 
+                                        "40 - 49", 
+                                        "50 - 59",
+                                        "60 or over"))) |>
+  group_by(year, perceived_age_group) |>
+  summarize(count = n(), .groups = "drop") |>
+  group_by(year) |>
+  mutate(proportion = count / sum(count)) 
+
+traffic_data_age |>
+  ggplot(aes(x = perceived_age_group, y = proportion, fill = perceived_age_group)) +
+  geom_col() +
+  labs(x = "Age Group", y = "Proportion", title = "Proportion of Traffic Violations by Age Group in 2018-2023") + 
+  guides(fill = guide_legend(title = "Age Group")) +
+  facet_wrap(~ year) + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) 
+```
+
+
+# Plots of Traffic Violations by Month
+
+```{r}
+traffic_monthly <- traffic_data |>
+  group_by(month_year) |>
+  summarize(count = n(), .groups = "drop")
+
+traffic_monthly |> 
+  ggplot(aes(x = month_year,  y = count)) +
+  geom_line(color = "steelblue") +
+  scale_x_date(date_labels = "%b %Y",  # e.g., Jan 2023
+               date_breaks = "1 month") +
+  labs(title = "Number of Traffic Violations in 2018-2023 by Month", x = "Month Year") + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(size = 6, angle = 90, vjust = 0.5, hjust=1))
+```
+
+
+
+
+
+
+
+
