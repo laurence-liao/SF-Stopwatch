@@ -399,6 +399,7 @@ const Heatmap = () => {
               </div>
             </div>
           )}
+          {loading && <div>Loading...</div>}
         </div>
 
         <div style={{ width: "70vw" }}>
