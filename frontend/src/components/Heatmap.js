@@ -66,6 +66,13 @@ const Heatmap = () => {
   const [race, setRace] = useState("");
   const [gender, setGender] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isBackYearDisabled, setBackYearDisabled] = useState(false);
+  const [isForwardYearDisabled, setForwardYearDisabled] = useState(true);
+  const [isBackHalfYearDisabled, setBackHalfYearDisabled] = useState(false);
+  const [isForwardHalfYearDisabled, setForwardHalfYearDisabled] =
+    useState(true);
+  const [isBackMonthDisabled, setBackMonthDisabled] = useState(false);
+  const [isForwardMonthDisabled, setForwardMonthDisabled] = useState(true);
 
   useEffect(() => {
     setLoading(true);
@@ -113,8 +120,7 @@ const Heatmap = () => {
 
     if (age || race || gender) {
       fetchFilteredData();
-    }
-    if (heatmapData) {
+    } else if (heatmapData) {
       if (dataType === "overall") {
         setFilteredData(heatmapData[dataType] || []);
       } else if (dataType === "yearly") {
@@ -141,8 +147,10 @@ const Heatmap = () => {
       const currentYear = parseInt(prev);
       const newYear = currentYear - 1;
       if (newYear >= 2018) {
+        setForwardYearDisabled(false); // Enable forward button if we go back
         return String(newYear);
       }
+      setBackYearDisabled(true); // Disable back button if we can't go further back
       return prev;
     });
   };
@@ -152,8 +160,10 @@ const Heatmap = () => {
       const currentYear = parseInt(prev);
       const newYear = currentYear + 1;
       if (newYear <= 2023) {
+        setBackYearDisabled(false); // Enable back button if we go forward
         return String(newYear);
       }
+      setForwardYearDisabled(true); // Disable forward button if we can't go further forward
       return prev;
     });
   };
@@ -169,13 +179,16 @@ const Heatmap = () => {
       }
 
       if (newYear === "2018" && newHalf === "H1") {
+        setBackHalfYearDisabled(true); // Disable back button for H1-2018
         return prev;
       }
 
       if (parseInt(newYear) >= 2018) {
+        setForwardHalfYearDisabled(false); // Enable forward button if we go back
         return `${newYear}_${newHalf}`;
       }
 
+      setBackHalfYearDisabled(true); // Disable back button if we can't go further back
       return prev;
     });
   };
@@ -189,8 +202,10 @@ const Heatmap = () => {
         newYear = String(parseInt(year) + 1);
       }
       if (parseInt(newYear) <= 2023) {
+        setBackHalfYearDisabled(false); // Enable back button if we go forward
         return `${newYear}_${newHalf}`;
       }
+      setForwardHalfYearDisabled(true); // Disable forward button if we can't go further forward
       return prev;
     });
   };
@@ -211,8 +226,10 @@ const Heatmap = () => {
         (year > 2018 || (year === 2018 && month >= "08")) &&
         (year < 2023 || (year === 2023 && month <= "12"))
       ) {
+        setForwardMonthDisabled(false); // Enable forward button if we go back
         return `${month}_${year}`;
       }
+      setBackMonthDisabled(true); // Disable back button if we can't go further back
       return prev;
     });
   };
@@ -233,18 +250,24 @@ const Heatmap = () => {
         (year < 2023 || (year === 2023 && month <= "12")) &&
         (year > 2018 || (year === 2018 && month >= "08"))
       ) {
+        setBackMonthDisabled(false); // Enable back button if we go forward
         return `${month}_${year}`;
       }
+      setForwardMonthDisabled(true); // Disable forward button if we can't go further forward
       return prev;
     });
   };
 
   return (
     <Container>
-      <div className="space-y-4 my-5" style={{ display: "flex", flexDirection: "row" }}>
-        <div style={{width:'30vw'}}>
-          <div style={{padding:'10px'}}>
-            <label htmlFor="dataType" style={{ paddingRight: "5px" }}>
+      <div
+        className="space-y-4 my-5"
+        style={{ display: "flex", flexDirection: "row" }}>
+        <div style={{ width: "30vw" }}>
+          <div style={{ padding: "10px" }}>
+            <label
+              htmlFor="dataType"
+              style={{ paddingRight: "5px" }}>
               Select Data Type:
             </label>
             <select
@@ -258,9 +281,13 @@ const Heatmap = () => {
               <option value="monthly">Monthly</option>
             </select>
           </div>
-  
-          <div  style={{padding:'10px'}}>
-            <label className="block text-gray-700" style={{ paddingRight: "5px" }}>Age Group:</label>
+
+          <div style={{ padding: "10px" }}>
+            <label
+              className="block text-gray-700"
+              style={{ paddingRight: "5px" }}>
+              Age Group:
+            </label>
             <select
               value={age}
               onChange={(e) => setAge(e.target.value)}
@@ -274,9 +301,13 @@ const Heatmap = () => {
               <option value="60 or over">60+</option>
             </select>
           </div>
-  
-          <div  style={{padding:'10px'}}>
-            <label className="block text-gray-700" style={{ paddingRight: "5px" }}>Race: </label>
+
+          <div style={{ padding: "10px" }}>
+            <label
+              className="block text-gray-700"
+              style={{ paddingRight: "5px" }}>
+              Race:{" "}
+            </label>
             <select
               value={race}
               onChange={(e) => setRace(e.target.value)}
@@ -294,9 +325,13 @@ const Heatmap = () => {
               <option value="Multi-racial">Other</option>
             </select>
           </div>
-  
-          <div style={{padding:'10px'}}>
-            <label className="block text-gray-700" style={{ paddingRight: "5px" }}>Gender:</label>
+
+          <div style={{ padding: "10px" }}>
+            <label
+              className="block text-gray-700"
+              style={{ paddingRight: "5px" }}>
+              Gender:
+            </label>
             <select
               value={gender}
               onChange={(e) => setGender(e.target.value)}
@@ -308,79 +343,85 @@ const Heatmap = () => {
             </select>
           </div>
           {dataType === "half_year" && (
-            <div  style={{padding:'10px'}}>
-              <p>Current Half-Year: {currentHalfYear.replace("_", "-")}</p>
+            <div style={{ padding: "10px" }}>
+              <p>
+                Current Half-Year:{" "}
+                {currentHalfYear.split("_").reverse().join("-")}
+              </p>
               <div className="flex justify-between mt-2">
                 <button
                   onClick={goBackHalfYear}
-                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
+                  disabled={isBackHalfYearDisabled}>
                   &lt; Previous
                 </button>
                 <button
                   onClick={goForwardHalfYear}
-                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
+                  disabled={isForwardHalfYearDisabled}>
                   Next &gt;
                 </button>
               </div>
             </div>
           )}
-  
+
           {dataType === "yearly" && (
-            <div  style={{padding:'10px'}}>
+            <div style={{ padding: "10px" }}>
               <p>Current Year: {currentYear.replace("_", "-")}</p>
               <div className="flex justify-between mt-2">
                 <button
                   onClick={goBackYear}
-                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
+                  disabled={isBackYearDisabled}>
                   &lt; Previous
                 </button>
                 <button
                   onClick={goForwardYear}
-                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
+                  disabled={isForwardYearDisabled}>
                   Next &gt;
                 </button>
               </div>
             </div>
           )}
-  
+
           {dataType === "monthly" && (
-            <div  style={{padding:'10px'}}>
-              <p>Current Month: {currentMonth.replace("_", "-")}</p> {/* Replace _ with - */}
+            <div style={{ padding: "10px" }}>
+              <p>Current Month: {currentMonth.replace("_", "-")}</p>{" "}
+              {/* Replace _ with - */}
               <div className="flex justify-between mt-2">
                 <button
                   onClick={goBackMonth}
-                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
+                  disabled={isBackMonthDisabled}>
                   &lt; Previous
                 </button>
                 <button
                   onClick={goForwardMonth}
-                  className="px-6 py-3 bg-gray-300 rounded-lg hover:bg-gray-500 transition duration-200">
+                  disabled={isForwardMonthDisabled}>
                   Next &gt;
                 </button>
               </div>
             </div>
           )}
         </div>
-        
-        <div style={{width:'70vw'}}>
-        <MapContainer
-          center={[37.7749, -122.4194]}
-          zoom={13}
-          style={{
-            height: "70vh",
-            width: "100%",
-          }}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <HeatmapLayer points={filteredData} dataType={dataType} />
-        </MapContainer>
+
+        <div style={{ width: "70vw" }}>
+          <MapContainer
+            center={[37.7749, -122.4194]}
+            zoom={13}
+            style={{
+              height: "70vh",
+              width: "100%",
+            }}>
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            <HeatmapLayer
+              points={filteredData}
+              dataType={dataType}
+            />
+          </MapContainer>
         </div>
       </div>
     </Container>
   );
-};  
+};
 
 export default Heatmap;
